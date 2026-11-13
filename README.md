@@ -37,3 +37,7 @@ Open an issue describing the behavior and reproduction. Submit focused pull requ
 ## Workers
 
 Start the API once to initialize the schema, then run `python worker.py` in additional terminals with the same DATABASE_URL. Submit `{"task":"sum","payload":[1,2,3]}` to POST /jobs and inspect GET /jobs. Workers execute only allowlisted built-in tasks. PostgreSQL is required for concurrent deployment.
+
+## Project planning
+
+Track planned work in [GitHub Issues](https://github.com/0xMudit/qq-pocket/issues). This beta favors a small auditable implementation; the roadmap records what is required before broader deployment.

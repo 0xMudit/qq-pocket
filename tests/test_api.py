@@ -39,3 +39,21 @@ def clean_database():
                     table_name=table.split('EXISTS ')[1].split(' ')[0]
                     db.execute(app.text('DELETE FROM '+table_name))
     yield
+
+def test_expired_lease_reclaimed():
+    with TestClient(app.app) as c:
+        c.post('/jobs',headers=H,json={'task':'sum','payload':[4,5]})
+        old=app.claim()
+        with app.engine.begin() as db: db.execute(app.text("UPDATE jobs SET lease=0 WHERE id=:id"),{'id':old['id']})
+        new=app.claim()
+        assert new['token']!=old['token'] and new['attempts']==2
+        app.finish(old,100)
+        app.finish(new,9)
+        assert c.get('/jobs',headers=H).json()[0]['result']=='9'
+
+def test_worker_executes_handler():
+    import worker
+    with TestClient(app.app) as c:
+        c.post('/jobs',headers=H,json={'task':'sum','payload':[4,5]})
+        assert worker.run_once()
+        assert c.get('/jobs',headers=H).json()[0]['result']=='9.0'
