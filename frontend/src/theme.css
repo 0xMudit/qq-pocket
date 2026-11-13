@@ -417,3 +417,8 @@ footer {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
   font-size: 0.8rem;
 }
+
+[data-slot="card"], [data-slot="alert"], [data-slot="button"][data-variant="outline"] {
+  border-color: var(--border);
+}
+
