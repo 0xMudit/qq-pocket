@@ -8,3 +8,6 @@ __pycache__/
 supabase/.temp/
 .vercel
 .env*
+
+frontend/node_modules/
+assets/workspace/

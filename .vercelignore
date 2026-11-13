@@ -4,3 +4,5 @@
 __pycache__
 .pytest_cache
 supabase/.temp
+
+frontend/node_modules/

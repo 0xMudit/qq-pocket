@@ -1,0 +1,190 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--secondary);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--secondary);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: oklch(0.62 0.21 27);
+  --color-border: var(--border);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+}
+:root {
+  --background: oklch(0.17 0.02 255);
+  --foreground: oklch(0.93 0.015 255);
+  --card: oklch(0.22 0.02 255);
+  --primary: oklch(0.82 0.14 73);
+  --on-primary: oklch(0.17 0.02 255);
+  --muted: oklch(0.71 0.025 255);
+  --border: oklch(0.32 0.025 255);
+  --secondary: color-mix(in oklab, var(--card) 88%, var(--primary));
+  color-scheme: dark;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, system-ui, sans-serif;
+}
+button {
+  cursor: pointer;
+}
+h1 {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1.12;
+}
+h2 {
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+a {
+  text-underline-offset: 4px;
+}
+a:hover {
+  text-decoration: underline;
+}
+.center {
+  display: grid;
+  min-height: 90vh;
+  place-items: center;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-weight: 700;
+  font-size: 1.12rem;
+  white-space: nowrap;
+}
+.brand span {
+  display: grid;
+  place-items: center;
+  background: var(--primary);
+  color: var(--on-primary);
+  border-radius: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--card);
+  color: var(--foreground);
+  border-bottom: 1px solid var(--border);
+}
+.topbar nav {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.topbar nav button {
+  color: var(--foreground);
+}
+.topbar nav button[data-variant="ghost"] {
+  color: inherit;
+}
+.workspace-content {
+  max-width: 1280px;
+  margin: auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  display: grid;
+  gap: 1.2rem;
+}
+footer {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-block: 1rem;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+.auth {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.auth aside {
+  padding: clamp(2rem, 7vw, 6rem);
+  background: #1c2431;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2.5rem;
+}
+.auth aside p {
+  margin-top: 1.2rem;
+  max-width: 27rem;
+  color: #d3d6e5;
+}
+.auth section {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+.status[data-state="succeeded"],
+.status[data-state="captured"],
+.status[data-state="Online"] {
+  color: oklch(0.5 0.13 155);
+  background: oklch(0.91 0.06 155);
+}
+.status[data-state="dead"],
+.status[data-state="refunded"] {
+  color: oklch(0.52 0.17 27);
+  background: oklch(0.93 0.04 27);
+}
+.status[data-state="queued"],
+.status[data-state="pending"] {
+  color: oklch(0.49 0.13 67);
+  background: oklch(0.93 0.06 78);
+}
+@media (max-width: 760px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+  .auth aside {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  .auth aside h1 {
+    font-size: 1.5rem;
+  }
+  .auth section {
+    padding: 1rem;
+  }
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .topbar {
+    flex-wrap: wrap;
+  }
+}

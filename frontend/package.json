@@ -1,0 +1,26 @@
+{
+  "name": "qq-pocket-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "radix-ui": "latest",
+    "lucide-react": "latest",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "tailwind-merge": "latest",
+    "sonner": "latest",
+    "next-themes": "latest"
+  },
+  "devDependencies": {
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "tailwindcss": "latest",
+    "@tailwindcss/vite": "latest",
+    "tw-animate-css": "latest"
+  }
+}
