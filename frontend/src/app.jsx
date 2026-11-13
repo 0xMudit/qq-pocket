@@ -58,6 +58,7 @@ function Queue() {
     <>
       <div className="page-heading">
         <div>
+          <span className="product-context">Queue operations</span>
           <h1>Job queue</h1>
           <p className="text-muted-foreground">
             Schedule work and inspect worker results.

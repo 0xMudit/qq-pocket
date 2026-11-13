@@ -19,22 +19,24 @@
   --color-border: var(--border);
   --color-input: var(--border);
   --color-ring: var(--primary);
+  --radius: 0.65rem;
 }
 :root {
-  --background: oklch(0.17 0.02 255);
-  --foreground: oklch(0.93 0.015 255);
-  --card: oklch(0.22 0.02 255);
-  --primary: oklch(0.82 0.14 73);
-  --on-primary: oklch(0.17 0.02 255);
-  --muted: oklch(0.71 0.025 255);
-  --border: oklch(0.32 0.025 255);
-  --secondary: color-mix(in oklab, var(--card) 88%, var(--primary));
+  --background: #0c1016;
+  --foreground: #eff3fb;
+  --card: #151b24;
+  --primary: #ffbd79;
+  --on-primary: #291909;
+  --muted: #9ba8ba;
+  --border: #283444;
+  --secondary: #222d3c;
   color-scheme: dark;
 }
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 button {
   cursor: pointer;
@@ -134,7 +136,7 @@ footer {
 }
 .auth aside {
   padding: clamp(2rem, 7vw, 6rem);
-  background: #1c2431;
+  background: var(--card);
   color: white;
   display: flex;
   flex-direction: column;
@@ -187,4 +189,231 @@ footer {
   .topbar {
     flex-wrap: wrap;
   }
+}
+
+/* Dark surfaces, product accents, and consistent shadcn control states. */
+::selection {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+.workspace {
+  min-height: 100dvh;
+}
+.topbar {
+  min-height: 64px;
+  padding-block: 0.65rem;
+  background: var(--background);
+}
+.topbar nav > span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding-inline: 0.4rem;
+}
+.workspace-content {
+  gap: 1.25rem;
+  min-width: 0;
+}
+.workspace-content > * {
+  min-width: 0;
+}
+.page-heading {
+  margin-block: 0.4rem 0.25rem;
+}
+.page-heading p {
+  margin-top: 0.55rem;
+  font-size: 0.9rem;
+}
+.product-context {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--muted);
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+.brand {
+  letter-spacing: -0.035em;
+}
+.brand span {
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 0.6rem;
+}
+.brand span svg {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+[data-slot="button"] {
+  font-size: 0.8125rem;
+}
+[data-slot="button"][data-variant="outline"] {
+  background: color-mix(in srgb, var(--card) 75%, var(--background));
+}
+[data-slot="button"][data-variant="outline"]:hover {
+  background: var(--secondary);
+}
+[data-slot="input"],
+[data-slot="select-trigger"],
+[data-slot="textarea"] {
+  background: var(--background);
+}
+[data-slot="card"] {
+  box-shadow:
+    inset 0 1px 0 #ffffff07,
+    0 12px 32px #00000018;
+}
+[data-slot="card-title"] {
+  letter-spacing: -0.02em;
+}
+[data-slot="dialog-content"] {
+  border-color: var(--border);
+  box-shadow: 0 24px 90px #0009;
+}
+[data-slot="table-head"] {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+[data-slot="table-cell"] {
+  font-size: 0.8125rem;
+}
+[data-slot="table-row"] {
+  border-color: var(--border);
+}
+[data-slot="table-container"] {
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+}
+[data-slot="table-header"] {
+  background: var(--background);
+}
+[data-slot="table-cell"],
+[data-slot="table-head"] {
+  padding-inline: 0.85rem;
+}
+[data-slot="alert"] {
+  background: color-mix(in srgb, var(--background) 92%, var(--primary));
+}
+[data-slot="alert-description"] {
+  color: var(--foreground);
+  font-size: 0.8rem;
+}
+.status[data-state] {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--muted);
+}
+.status[data-state="captured"],
+.status[data-state="succeeded"],
+.status[data-state="Online"] {
+  color: #8be9bc;
+  background: #152b25;
+  border-color: #25443a;
+}
+.status[data-state="pending"],
+.status[data-state="queued"] {
+  color: #ffd29d;
+  background: #30251c;
+  border-color: #4a3625;
+}
+.status[data-state="dead"] {
+  color: #ffb4be;
+  background: #301d26;
+  border-color: #4d2938;
+}
+.status[data-state="refunded"],
+.status[data-state="running"] {
+  color: #c6b7ff;
+  background: #252038;
+  border-color: #413458;
+}
+.auth {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+}
+.auth aside {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  background:
+    radial-gradient(
+      ellipse at 18% 80%,
+      color-mix(in srgb, var(--primary) 18%, transparent),
+      transparent 62%
+    ),
+    var(--card);
+}
+.auth aside::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(transparent 12%, #000 100%);
+  opacity: 0.65;
+}
+.auth aside h1 {
+  max-width: 13ch;
+  font-size: clamp(2.7rem, 5.2vw, 5.2rem);
+  letter-spacing: -0.065em;
+}
+.auth aside p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+.auth aside > a {
+  color: var(--primary);
+  font-size: 0.85rem;
+  width: fit-content;
+}
+.auth section [data-slot="card"] {
+  border-color: var(--border);
+  padding-block: 1.75rem;
+}
+@media (max-width: 760px) {
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 100dvh;
+  }
+  .auth aside {
+    min-height: unset;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    gap: 1.15rem;
+  }
+  .auth aside h1 {
+    font-size: 2.2rem;
+    max-width: 20ch;
+  }
+  .auth aside p {
+    margin-top: 0.55rem;
+    font-size: 0.85rem;
+  }
+  .auth section {
+    padding-block: 1.4rem;
+  }
+  [data-slot="card-header"],
+  [data-slot="card-content"] {
+    padding-inline: 1rem;
+  }
+}
+
+.workspace-content {
+  max-width: 1240px;
+}
+.workspace-content .metric-grid [data-slot="card"] {
+  border-top-color: #785b3b;
+  background: linear-gradient(150deg, #211c1a, var(--card) 68%);
+}
+.workspace-content .metric-grid [data-slot="card-content"] {
+  font-variant-numeric: tabular-nums;
+}
+.workspace-content .metric-grid [data-slot="card-title"] {
+  text-transform: capitalize;
+}
+.workspace-content [data-slot="table-container"] td:first-child strong {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
 }

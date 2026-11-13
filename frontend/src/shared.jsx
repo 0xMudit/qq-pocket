@@ -1,3 +1,4 @@
+import { Layers3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,7 +245,7 @@ function Login({ onLogin }) {
         <a href="/lab">System design lab ↗</a>
       </aside>
       <section>
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl">
               {register ? "Create an account" : "Sign in"}
@@ -315,7 +316,10 @@ function Login({ onLogin }) {
 export function Brand() {
   return (
     <div className="brand">
-      <span>{brand.mark}</span> QQ {brand.name}
+      <span aria-hidden="true">
+        <Layers3 />
+      </span>{" "}
+      QQ {brand.name}
     </div>
   );
 }
