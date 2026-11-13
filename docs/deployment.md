@@ -32,3 +32,7 @@ A production evolution would use role-separated credentials, versioned migration
 5. Verify `/health`, the home page, and POST `/demo/run` without authentication.
 
 GitHub-to-Vercel automatic linking was unavailable because the Vercel GitHub integration lacked repository access. CLI deployments work; source and CI remain on GitHub.
+
+## Verification performed
+
+The public demo was exercised against Supabase PostgreSQL and through a browser. An opt-in `check_postgres.py` script additionally checks concurrent operations. These checks establish selected correctness properties, not sustained throughput or availability. The animated process explorer is an explanatory replay after the response; its visual stage duration is not server timing. The displayed round trip is measured by the browser and includes network latency.

@@ -47,3 +47,7 @@ Track planned work in [GitHub Issues](https://github.com/0xMudit/qq-pocket/issue
 The Vercel deployment uses Supabase PostgreSQL in a private `qq_pocket` schema. Open the home page and select **Run the demo**. The public endpoint accepts no arbitrary workload or financial data; it runs a fixed synthetic scenario with a database-backed limit of 30 runs per minute. Operator APIs still require a secret API key.
 
 See [deployment and design decisions](docs/deployment.md).
+
+**Live demo:** https://qq-pocket.vercel.app
+
+For an opt-in database concurrency check, set DATABASE_URL to a dedicated test database with the schema applied and run `python check_postgres.py`. It writes synthetic test records.
