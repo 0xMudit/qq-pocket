@@ -1,53 +1,78 @@
-# Qq Pocket
+# QQ Pocket
 
-Durable task queue with leased workers and bounded retries.
+A durable background-job workspace with account-owned queues, scheduled jobs, automatic workers, and inspectable results.
 
-**0.1.0-beta.1** · Python 3.12 · FastAPI · PostgreSQL · MIT
+[Open the beta](https://qq-pocket.vercel.app) · [API reference](https://qq-pocket.vercel.app/docs) · [Engineering lab](https://qq-pocket.vercel.app/lab) · [Issues](https://github.com/0xMudit/qq-pocket/issues)
 
-A small, runnable backend portfolio project with explicit correctness boundaries.
+**v0.2.0-beta.1** · FastAPI · PostgreSQL / Supabase · Vercel · MIT
+
+## Use the application
+
+1. Create an account or sign in to the shared demo workspace.
+2. Submit a job using SHA-256, text statistics, JSON formatting, or numeric summation.
+3. Schedule a delay, inspect the result, cancel queued work, or retry dead-letter jobs.
+4. Create a revocable API key to submit jobs or operate a worker from another process.
+
+### Demo credentials
+
+Username: `demo-pocket`
+Password: `PocketBeta!2026`
+
+The demo is a shared public account. Its data and API keys are visible to others who sign in with those credentials. Create your own account for isolated data. The application is a functional beta, not a production-certified service.
 
 ## Run locally
 
 ```sh
 python -m venv .venv
-# Activate .venv for your shell
+# Activate .venv using your shell's command.
 pip install -r requirements.txt
-# Set API_KEY to a random secret of at least 16 characters
+# Set API_KEY to a random secret of at least 16 characters.
 uvicorn app:app --reload
 ```
 
-Local mode uses SQLite. Open http://localhost:8000/docs and supply `x-api-key` for protected operations. Health is public. For PostgreSQL, copy `.env.example` to `.env`, replace its secret, and run `docker compose up --build`. Run projects individually or change their host port mappings.
+Open http://localhost:8000. SQLite is supported for local exploration and unit tests. Set DATABASE_URL to a PostgreSQL psycopg connection URL with TLS for deployment. On a fresh local database, startup initializes the schema and shared demo account. Hosted schema changes are provided in `supabase/migrations/`.
+
+For Docker, copy `.env.example` to `.env`, replace its secret and run `docker compose up --build`. Change host port mappings when running multiple apps. Scheduled recovery for Pocket requires its hosted scheduler or a running beta worker; plain local API startup alone does not supply a persistent scheduler.
+
+## API integration
+
+Create a key in the account UI and send it as `Authorization: Bearer TOKEN`. Keys expire after 30 days and can be revoked. Browser sessions use HttpOnly cookies and expire after seven days. API payloads and validation rules are documented at `/docs`.
+
+```text
+POST /api/jobs                 Submit an idempotent job
+GET  /api/jobs                  Latest 200 account-owned jobs
+POST /api/jobs/{id}/cancel      Cancel queued work
+POST /api/jobs/{id}/retry       Retry dead/cancelled work
+POST /api/worker/claim          Claim your next eligible job
+POST /api/worker/{id}/ack       Fenced acknowledgement
+```
+
+## Correctness and system design
+
+### Queue guarantees
+
+Submission commits before execution. A background task provides low-latency execution, while Supabase Cron invokes the protected dispatcher every minute when eligible jobs exist. The scheduler runs independently of browsers and local computers. A bounded tick processes up to 20 jobs; additional work drains on later ticks. An API worker can also claim work with a tenant API key.
+
+Claims use PostgreSQL `FOR UPDATE SKIP LOCKED`, a 30-second lease, and an opaque token. Acknowledgement requires the current token and an unexpired lease. Three attempts are allowed; failures back off exponentially and become dead-letter jobs. A crashed worker's lease can be reclaimed. Delivery is **at least once**, not exactly once. External handlers must make their side effects idempotent.
+
+Only four bounded built-in handlers are hosted. Arbitrary Python execution, arbitrary HTTP callbacks, and long-running jobs are not supported. Delay is up to 24 hours; the workspace holds at most 1,000 jobs. The current hosted dispatcher prioritizes oldest eligible jobs across accounts; per-tenant fairness is future work.
+
+## Verification
 
 ```sh
 python -m pytest -q
 ```
 
-## Design
-
-See [architecture](docs/architecture.md), [operations](docs/operations.md), and [feature backlog](issues/README.md). API schemas and executable requests are available in `/docs`.
+Tests cover ownership boundaries, session and API-key revocation, validation, and domain failure modes. `check_postgres.py` is an opt-in concurrency check for the original engineering-lab primitives; it writes synthetic data and is not a load benchmark. See [architecture](docs/architecture.md), [deployment](docs/deployment.md), and [security](SECURITY.md).
 
 ## Beta boundaries
 
-Single trusted operator API key; no tenant isolation, public deployment hardening, measured throughput claims, or production SLA. SQLite is a development convenience. PostgreSQL concurrency must be validated before deployment. Schema bootstrap is intended for a fresh database; versioned migrations are a roadmap item.
+No uptime SLA or measured throughput claim. Account usernames are not email addresses. Email verification, password recovery, MFA and self-service account deletion are not implemented. Store recoverable credentials and avoid sensitive data while evaluating the beta. Quotas and rate limits bound usage; they are not a comprehensive anti-abuse system.
 
 ## Contributing
 
-Open an issue describing the behavior and reproduction. Submit focused pull requests with tests for failure modes. Never commit credentials or personal location data.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Include failure-mode tests and explain concurrency assumptions in pull requests. Do not commit secrets or real location data. Licensed under MIT.
 
-## Workers
+## Persistent local worker
 
-Start the API once to initialize the schema, then run `python worker.py` in additional terminals with the same DATABASE_URL. Submit `{"task":"sum","payload":[1,2,3]}` to POST /jobs and inspect GET /jobs. Workers execute only allowlisted built-in tasks. PostgreSQL is required for concurrent deployment.
-
-## Project planning
-
-Track planned work in [GitHub Issues](https://github.com/0xMudit/qq-pocket/issues). This beta favors a small auditable implementation; the roadmap records what is required before broader deployment.
-
-## Public engineering demo
-
-The Vercel deployment uses Supabase PostgreSQL in a private `qq_pocket` schema. Open the home page and select **Run the demo**. The public endpoint accepts no arbitrary workload or financial data; it runs a fixed synthetic scenario with a database-backed limit of 30 runs per minute. Operator APIs still require a secret API key.
-
-See [deployment and design decisions](docs/deployment.md).
-
-**Live demo:** https://qq-pocket.vercel.app
-
-For an opt-in database concurrency check, set DATABASE_URL to a dedicated test database with the schema applied and run `python check_postgres.py`. It writes synthetic test records.
+Run `python beta_worker.py` with the same DATABASE_URL as the API, or use the included Docker Compose worker. The older `worker.py` serves the isolated engineering-lab queue.

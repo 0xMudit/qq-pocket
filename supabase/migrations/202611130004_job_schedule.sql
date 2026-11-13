@@ -1,0 +1,1 @@
+ALTER TABLE qq_pocket.beta_jobs ADD COLUMN IF NOT EXISTS delay_seconds INTEGER NOT NULL DEFAULT 0;

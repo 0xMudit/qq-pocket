@@ -45,10 +45,12 @@ async def lifespan(app):
         for statement in SCHEMA.split(";"):
             if statement.strip():
                 c.execute(text(statement))
+    accounts.initialize()
+    product.initialize()
     yield
 
 
-app = FastAPI(title=TITLE, version="0.1.0-beta.1", lifespan=lifespan)
+app = FastAPI(title=TITLE, version="0.2.0-beta.1", lifespan=lifespan)
 
 
 @app.get("/health")
@@ -157,7 +159,7 @@ from pathlib import Path
 
 @app.get("/")
 def dashboard():
-    return FileResponse(Path(__file__).with_name("demo.html"))
+    return FileResponse(Path(__file__).with_name("application.html"))
 
 
 # Shared database rate limiting bounds the public, fixed-input demonstration.
@@ -227,3 +229,32 @@ from fastapi.staticfiles import StaticFiles
 app.mount(
     "/assets", StaticFiles(directory=Path(__file__).with_name("assets")), name="assets"
 )
+
+from accounts import Accounts, SCHEMA as ACCOUNT_SCHEMA
+from product import Product, SCHEMA as PRODUCT_SCHEMA
+
+SCHEMA += ";" + ACCOUNT_SCHEMA + ";" + PRODUCT_SCHEMA
+accounts = Accounts(engine, "qq-pocket")
+product = Product(engine, accounts)
+app.include_router(accounts.router)
+app.include_router(product.router)
+
+
+@app.get("/lab", include_in_schema=False)
+def engineering_lab():
+    return FileResponse(Path(__file__).with_name("demo.html"))
+
+
+@app.post("/internal/tick", dependencies=[Depends(auth)], include_in_schema=False)
+def worker_tick():
+    return product.tick(20)
+
+
+@app.middleware("http")
+async def response_headers(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "same-origin"
+    return response

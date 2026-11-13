@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>QQ Pocket · Workspace</title>
+    <link rel="stylesheet" href="/assets/application.css" />
+  </head>
+  <body>
+    <section id="auth-view" class="auth-shell">
+      <aside class="auth-story">
+        <div class="brand">
+          <span class="brand-mark">Q</span>QQ Pocket
+          <span class="badge">BETA</span>
+        </div>
+        <div>
+          <span class="eyebrow" style="color: inherit"
+            >Built for the work ahead</span
+          >
+          <h1>Your work.<br />Reliably in motion.</h1>
+          <p>
+            Schedule tasks, inspect results, and keep your background work
+            moving. A durable queue you can actually use.
+          </p>
+          <div class="orbit"><span>01</span><span>02</span><span>03</span></div>
+          <div class="eyebrow" style="color: inherit">
+            SUBMIT → QUEUE → WORKER
+          </div>
+        </div>
+        <small
+          >Persistent workspaces · Private account data · Open source</small
+        >
+      </aside>
+      <div class="auth-main">
+        <div class="auth-box">
+          <span class="eyebrow">QQ Pocket / Beta workspace</span>
+          <h2 id="auth-title">Welcome back</h2>
+          <p>
+            Sign in to your workspace or explore with the shared demo account.
+          </p>
+          <form id="auth-form">
+            <input id="auth-mode" type="hidden" value="login" /><label
+              for="username"
+              >Username</label
+            ><input
+              id="username"
+              autocomplete="username"
+              minlength="3"
+              maxlength="40"
+              pattern="[a-zA-Z0-9_-]+"
+              required
+              placeholder="your-username"
+            /><label for="password">Password</label
+            ><input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              minlength="12"
+              maxlength="128"
+              required
+              placeholder="At least 12 characters"
+            />
+            <div class="auth-error" id="auth-error" role="alert"></div>
+            <button type="submit" id="auth-submit">Sign in</button>
+          </form>
+          <button class="ghost" id="toggle-auth">
+            New here? Create an account
+          </button>
+          <div class="divider"></div>
+          <button class="secondary demo-button" id="demo-login">
+            Explore the demo workspace →
+          </button>
+          <div class="credentials">
+            Demo credentials: <code id="demo-credentials">Loading…</code
+            ><br />Demo data is shared publicly. Create an account for your own
+            data.<br />Beta accounts use usernames; password recovery is not yet
+            available.
+          </div>
+          <a class="help-text" href="/lab">Explore the system design lab ↗</a>
+        </div>
+      </div>
+    </section>
+    <section id="workspace" class="workspace" hidden>
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">Q</span>Pocket</div>
+        <nav>
+          <button class="active">▤ Jobs</button
+          ><button data-keys>⌘ API keys</button>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="eyebrow">Workspace</span><strong data-username></strong
+          ><a href="/docs" target="_blank">API reference ↗</a
+          ><a href="/lab" target="_blank">System design ↗</a
+          ><button class="secondary" data-logout>Sign out</button>
+        </div>
+      </aside>
+      <main class="main-content">
+        <header class="workspace-header row">
+          <div>
+            <span class="eyebrow">Workspace / Queue</span>
+            <h1>Jobs, under control.</h1>
+            <span class="muted"
+              >Submit work. Follow its progress. Inspect every result.</span
+            >
+          </div>
+          <button id="new-job">＋ Submit job</button>
+        </header>
+        <div class="notice" id="shared-notice" hidden>
+          Shared demo workspace. Everyone using these credentials can see this
+          data. Use synthetic inputs only.
+        </div>
+        <div class="metric-grid">
+          <div class="metric">
+            <span>Queued</span><strong id="queued-count">0</strong>
+          </div>
+          <div class="metric">
+            <span>Running</span><strong id="running-count">0</strong>
+          </div>
+          <div class="metric">
+            <span>Succeeded</span><strong id="succeeded-count">0</strong>
+          </div>
+          <div class="metric">
+            <span>Dead letter</span><strong id="dead-count">0</strong>
+          </div>
+        </div>
+        <div class="row">
+          <h3>Recent jobs <span class="badge">LATEST 200</span></h3>
+          <button class="ghost" id="refresh-jobs">↻ Refresh</button>
+        </div>
+        <div class="filters">
+          <input
+            id="job-search"
+            aria-label="Search jobs"
+            placeholder="Search job ID or task…"
+          /><select id="job-filter" aria-label="Job status">
+            <option value="">All statuses</option>
+            <option>queued</option>
+            <option>running</option>
+            <option>succeeded</option>
+            <option>dead</option>
+            <option>cancelled</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task / Job</th>
+                <th>Status</th>
+                <th>Attempts</th>
+                <th>Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="job-rows"></tbody>
+          </table>
+          <div class="empty" id="jobs-empty">
+            Your queue is ready.<br />Submit a job to get started.
+          </div>
+        </div>
+        <p class="help-text">
+          Built-in handlers run automatically. Scheduled recovery checks run
+          every minute; delayed jobs may start after that interval. Delivery is
+          at least once. Workspace limit: 1,000 jobs.
+        </p>
+      </main>
+    </section>
+    <dialog id="job-dialog">
+      <button class="close" data-close aria-label="Close">×</button>
+      <h2>Submit a job</h2>
+      <p>Choose a built-in handler and supply your own input.</p>
+      <form id="job-form">
+        <label for="job-task">Handler</label
+        ><select id="job-task">
+          <option value="sum">Sum numbers</option>
+          <option value="sha256">SHA-256 digest</option>
+          <option value="text_stats">Text statistics</option>
+          <option value="json_format">Format JSON</option></select
+        ><label for="job-payload">Payload</label
+        ><textarea id="job-payload" maxlength="20000" required>
+[12,24,36]</textarea
+        ><label for="job-delay">Schedule delay (seconds)</label
+        ><input
+          id="job-delay"
+          type="number"
+          value="0"
+          min="0"
+          max="86400"
+          required
+        />
+        <p class="help-text">
+          Failures retry up to three attempts with backoff. Invalid handler
+          input will appear in the error details.
+        </p>
+        <div class="form-actions">
+          <button type="button" class="secondary" data-close>Cancel</button
+          ><button id="submit-job">Enqueue job</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="job-detail">
+      <button class="close" data-close aria-label="Close">×</button>
+      <h2>Job details</h2>
+      <div id="job-detail-content"></div>
+      <div class="form-actions" id="job-detail-actions"></div>
+    </dialog>
+    <dialog id="secret-dialog">
+      <button class="close" data-close aria-label="Close">×</button>
+      <h2>Copy your token</h2>
+      <p>
+        This token is shown only once. Keep it private. Anyone holding it can
+        access the permitted API.
+      </p>
+      <label for="secret-output">Token or copied content</label
+      ><textarea id="secret-output" readonly></textarea
+      ><button id="copy-secret">Copy to clipboard</button>
+    </dialog>
+    <dialog id="keys-dialog">
+      <button class="close" data-close aria-label="Close">×</button>
+      <h2>API keys</h2>
+      <p>
+        Use a key as <code>Authorization: Bearer TOKEN</code>. Keys expire after
+        30 days and can be revoked here.
+      </p>
+      <form id="key-form">
+        <label for="key-label">Key label</label
+        ><input
+          id="key-label"
+          required
+          maxlength="60"
+          placeholder="My integration"
+        /><button>Create API key</button>
+      </form>
+      <div class="divider"></div>
+      <div class="stack" id="key-list"></div>
+    </dialog>
+    <div id="toast" role="status" hidden></div>
+    <script src="/assets/accounts.js" defer></script>
+    <script src="/assets/application.js" defer></script>
+  </body>
+</html>
