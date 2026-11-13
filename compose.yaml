@@ -1,0 +1,35 @@
+services:
+  api:
+    build: .
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      retries: 10
+    ports: ["8000:8000"]
+    environment:
+      API_KEY: ${API_KEY:?Set API_KEY}
+      DATABASE_URL: postgresql+psycopg://qq:qq@db/qq
+    depends_on:
+      worker:
+    build: .
+    command: python worker.py
+    environment:
+      DATABASE_URL: postgresql+psycopg://qq:qq@db/qq
+    depends_on:
+      api:
+        condition: service_healthy
+  db:
+        condition: service_healthy
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: qq
+      POSTGRES_PASSWORD: qq
+      POSTGRES_DB: qq
+    volumes: ["data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qq"]
+      interval: 3s
+      retries: 10
+volumes:
+  data:

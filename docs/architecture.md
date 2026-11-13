@@ -1,0 +1,3 @@
+# Architecture and guarantees
+
+Producers → authenticated API → jobs table ← competing workers. PostgreSQL row locks with SKIP LOCKED avoid contention. A 30-second lease and unique claim token fence stale acknowledgements. Delivery is at least once: handlers must make external side effects idempotent. Three attempts maximum; exponential retry delay; exhausted jobs remain dead for inspection. Only echo and sum handlers are included. No heartbeat: tasks must finish within 30 seconds. SQLite tests do not establish PostgreSQL concurrency correctness. See https://www.postgresql.org/docs/18/sql-select.html for locking semantics.
