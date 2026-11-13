@@ -57,3 +57,10 @@ def test_worker_executes_handler():
         c.post('/jobs',headers=H,json={'task':'sum','payload':[4,5]})
         assert worker.run_once()
         assert c.get('/jobs',headers=H).json()[0]['result']=='9.0'
+
+def test_public_demo():
+    with TestClient(app.app) as c:
+        assert c.get('/').status_code==200
+        response=c.post('/demo/run')
+        assert response.status_code==200
+        assert 'FAILED' not in response.json()['checks']

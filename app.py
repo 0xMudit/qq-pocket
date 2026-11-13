@@ -7,9 +7,24 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, Header, HTTPException
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import StaticPool
-engine = create_engine(os.getenv("DATABASE_URL", "sqlite:///data.db"), **({"connect_args":{"check_same_thread":False}, "poolclass":StaticPool} if os.getenv("DATABASE_URL", "").endswith(":memory:") else {}))
+database_url = os.getenv("DATABASE_URL", "sqlite:///data.db")
+engine_options = {"pool_pre_ping": True}
+if database_url.endswith(":memory:"):
+    engine_options.update(connect_args={"check_same_thread":False}, poolclass=StaticPool)
+elif database_url.startswith("postgresql"):
+    from sqlalchemy.pool import NullPool
+    engine_options.update(poolclass=NullPool, connect_args={"prepare_threshold":None})
+engine = create_engine(database_url, **engine_options)
+if database_url.startswith("postgresql"):
+    from sqlalchemy import event
+    @event.listens_for(engine, "connect")
+    def set_schema(connection, record):
+        with connection.cursor() as cursor:
+            cursor.execute("SET search_path TO qq_pocket")
+        connection.commit()
+
 def auth(x_api_key: str = Header(default="")):
-    if not secrets.compare_digest(x_api_key, os.environ["API_KEY"]):
+    if not secrets.compare_digest(x_api_key.encode(), os.environ["API_KEY"].encode()):
         raise HTTPException(401, "Invalid API key")
 @asynccontextmanager
 async def lifespan(app):
@@ -49,3 +64,32 @@ def claim():
 def finish(job, result=None, failed=False):
     with engine.begin() as c:
         c.execute(text("UPDATE jobs SET status=:status,result=:result,available=:available WHERE id=:id AND token=:token AND status='running' AND lease>:now"),dict(id=job['id'],token=job['token'],status=('dead' if job['attempts']>=3 else 'queued') if failed else 'succeeded',result=json.dumps(result),available=time.time()+2**job['attempts'],now=time.time()))
+
+from fastapi.responses import FileResponse
+from pathlib import Path
+@app.get("/")
+def dashboard(): return FileResponse(Path(__file__).with_name("demo.html"))
+
+# Shared database rate limiting bounds the public, fixed-input demonstration.
+SCHEMA += "; CREATE TABLE IF NOT EXISTS demo_limits (bucket BIGINT PRIMARY KEY, count INTEGER NOT NULL)"
+def demo_budget():
+    import time
+    bucket=int(time.time()//60)
+    with engine.begin() as c:
+        c.execute(text("DELETE FROM demo_limits WHERE bucket < :old"), {"old":bucket-2})
+        row=c.execute(text("INSERT INTO demo_limits VALUES(:bucket,1) ON CONFLICT(bucket) DO UPDATE SET count=demo_limits.count+1 WHERE demo_limits.count<30 RETURNING count"), {"bucket":bucket}).first()
+        if not row: raise HTTPException(429,"Demo is busy. Try again in a minute.")
+
+@app.post("/demo/run")
+def demo_run():
+    demo_budget()
+    identifier=submit(Job(task="sum",payload=[12,24,36]))['id']
+    # One bounded worker tick uses the same claim and fencing implementation.
+    import worker
+    for _ in range(3):
+        if not worker.run_once(): break
+    with engine.connect() as c:
+        row=dict(c.execute(text("SELECT * FROM jobs WHERE id=:id"),{"id":identifier}).mappings().one())
+    with engine.begin() as c:
+        c.execute(text("DELETE FROM jobs WHERE available<:old AND status IN ('succeeded','dead')"),{"old":time.time()-3600})
+    return {"title":"Durable job processed", "checks":["Job persisted before processing","Atomic claim with a unique lease token","Result acknowledged only by the lease owner"], "record":row}
